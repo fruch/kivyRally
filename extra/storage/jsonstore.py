@@ -9,7 +9,7 @@ __all__ = ('JsonStore', )
 
 
 from os.path import exists
-from kivy.storage import AbstractStore
+from extra.storage import AbstractStore
 from json import loads, dump
 
 
