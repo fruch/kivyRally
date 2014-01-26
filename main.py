@@ -7,6 +7,10 @@ from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.listview import ListView, ListItemButton, SelectableView, CompositeListItem
+from kivy.adapters.dictadapter import  DictAdapter
+
+
 
 from extra.storage.jsonstore import JsonStore
 
@@ -43,6 +47,27 @@ Builder.load_string("""
             size: self.size
             pos: self.pos
 
+[CustomListItem@SelectableView+BoxLayout]:
+    size_hint_y: ctx.size_hint_y
+    height: ctx.height
+    orientation: 'horizontal'
+    ListItemLabel:
+        text: ctx.text
+        text_size: (self.width, None)
+        halign: 'left'
+        background_color: (1, 0.5, 0.5, 1)
+    ListItemButton:
+        text: '+'
+        size_hint_x: 0.1
+        on_press:
+            print self
+
+    ListItemButton:
+        text: 'X'
+        size_hint_x: 0.1
+        on_press:
+            print self
+
 <MenuScreen>:
     BoxLayout:
         orientation: 'vertical'
@@ -62,6 +87,14 @@ Builder.load_string("""
         Button:
             text: 'Quit'
 
+<StoriesScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        ListView:
+            id: stories_list
+            size_hint: 1, 1
+            item_strings: []
+
 <DefectsScreen>:
     BoxLayout:
         orientation: 'vertical'
@@ -76,7 +109,7 @@ Builder.load_string("""
         ListView:
             id: tasks_list
             size_hint: 1, 1
-            item_strings: [str("TASK number 1 and more %d" % index) for index in range(100)]
+            item_strings: []
 
 <SettingsScreen>:
     BoxLayout:
@@ -178,6 +211,8 @@ class MainConnection(object):
 
     @classmethod
     def connect(cls, username=None, password=None, workspace=None, project=None):
+        if cls.connected: return
+
         if username is None:
             username = SETTINGS.get("settings")['username']
             password = SETTINGS.get("settings")['password']
@@ -229,7 +264,32 @@ class TasksScreen(Screen):
 
 
 class StoriesScreen(Screen):
-    pass
+    def on_enter(self, *args, **kwargs):
+        super(StoriesScreen, self).on_enter(*args, **kwargs)
+
+        #MainConnection.connect()
+        #user = MainConnection.rally.getUserInfo(username=SETTINGS.get("settings")['username'] ).pop(0)
+        #query =  dict(Owner=user.ref)
+        '''
+        res = MainConnection.rally.get('Story', fetch=True)
+        print res
+        self.ids.stories_list.item_strings = []
+        for r in res:
+            self.ids.stories_list.item_strings.append(unicode(r.Name))
+        '''
+        list_item_args_converter =             lambda row_index, rec: {'text': rec['text'],
+                                                                       'is_selected': rec['is_selected'],
+                                                                       'size_hint_y': None,
+                                                                       'height': 50}
+        integers_dict =         { str(i): {'text': str(i), 'is_selected': False} for i in range(100)}
+
+        dict_adapter = DictAdapter(sorted_keys=[str(i) for i in range(100)],
+            data=integers_dict,
+            args_converter=list_item_args_converter,
+            template='CustomListItem')
+
+        self.add_widget(ListView(adapter=dict_adapter), index=0)
+
 
 class DefectsScreen(Screen):
     def on_enter(self, *args, **kwargs):
@@ -239,7 +299,7 @@ class DefectsScreen(Screen):
         user = MainConnection.rally.getUserInfo(username=SETTINGS.get("settings")['username'] ).pop(0)
         query =  dict(Owner=user.ref)
         res = MainConnection.rally.get('Defect', fetch=True, query=query)
-        print res
+
         self.ids.defects_list.item_strings = []
         for r in res:
             print r.Name
