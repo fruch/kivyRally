@@ -1,0 +1,3 @@
+title=kivyRally
+author=Israel Fruchter
+orientation=portrait
