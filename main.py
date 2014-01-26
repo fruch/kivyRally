@@ -8,7 +8,7 @@ from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 
-#from kivy.storage.jsonstore import JsonStore
+from extra.storage.jsonstore import JsonStore
 
 # remove this when on real device
 #Config.set('graphics', 'width', str(768 / 2))
@@ -204,18 +204,11 @@ class MainConnection(object):
                     cls.work_spaces[workspace.Name].append(project.Name)
 
 
-#SETTINGS = JsonStore('settings.json')
-#if not SETTINGS.exists("settings"):
-#    SETTINGS.put("settings")
+SETTINGS = JsonStore('settings.json')
+if not SETTINGS.exists("settings"):
+    SETTINGS.put("settings")
 
-class a(object):
-    _d = dict()
-    def put(self, key, **kwargs):
-        self._d = dict(**kwargs)
-    def get(self, key):
-        return self._d
 
-SETTINGS = a()
 class TasksScreen(Screen):
     def __init__(self, *args, **kwargs):
 
